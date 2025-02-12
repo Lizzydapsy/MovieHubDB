@@ -1,0 +1,44 @@
+classDiagram
+    class Client {
+        +HTTP requests
+        +UI/UX interactions
+    }
+
+    class Frontend {
+        +HTML
+        +CSS
+        +JavaScript (fetch API)
+        +Displays data
+    }
+
+    class Backend {
+        +Flask app
+        +API routes
+        +Handles business logic
+    }
+
+    class Redis {
+        +Cache data
+        +set() and get()
+    }
+
+    class PostgreSQL {
+        +Store data
+        +SQL queries
+    }
+
+    class API {
+        +GET /data
+        +Fetches data from either Redis or PostgreSQL
+        +Stores fetched data in Redis
+        +Switches between Redis/PostgreSQL based on config
+    }
+
+    Client --> Frontend : Interacts with UI
+    Frontend --> Backend : Sends HTTP requests (AJAX/fetch)
+    Backend --> API : Calls API route for data
+    API --> Redis : Fetches data from Redis cache (if enabled)
+    API --> PostgreSQL : Fetches data from PostgreSQL (if enabled)
+    Redis --> PostgreSQL : Cache miss leads to DB query (if Redis is used first)
+    API --> Frontend : Returns data
+    Frontend --> Client : Renders data on UI
