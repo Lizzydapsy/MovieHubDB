@@ -1,3 +1,25 @@
+Folder Structure
+
+graph TB;
+    A[movie-data-project] --> B[backend]
+    A --> C[frontend]
+    A --> D[data]
+    A --> E[.gitignore]
+    A --> F[README.md]
+    A --> G[run.sh]
+
+    B --> B1[app.py]
+    B --> B2[database.py]
+    B --> B3[config.py]
+    B --> B4[requirements.txt]
+
+    C --> C1[index.html]
+
+    D --> D1[movie.csv]
+
+
+Design
+
 classDiagram
     class Client {
         +HTTP requests

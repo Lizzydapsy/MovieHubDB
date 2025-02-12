@@ -1,6 +1,2 @@
-__pycache__/
-*.pyc
-.env
-.vscode/
-.DS_Store
+mh_env/.
 data/*.csv
