@@ -1,4 +1,4 @@
-# Optimized Movie Data Dashboard: A PostgreSQL, Redis, and Flask Web Application
+# Movie Database Management and Visualization System 
 
 The purpose of our project was to create a data-driven visualization dashboard using PostgreSQL and Redis for efficient data storage and caching. By integrating these two technologies with Flask as the backend framework, we aimed to build an application that could fetch and display movie data from PostgreSQL or Redis, improving performance. The project also allowed us to enhance our frontend development skills, where we displayed the movie data in an interactive table and visualised genre distribution. Through this project, we learned how to effectively use both relational databases (PostgreSQL) and non-relational databse (Redis), improving our understanding of backend development and database management.
 
