@@ -1,25 +1,32 @@
 #!/bin/bash
 
-# This script will start the necessary services and run the Flask application
+# Stop script on error
+set -e
 
-# Define the PostgreSQL and Redis service names (you can adjust these based on your system or Docker setup)
-PG_SERVICE_NAME="postgresql"
-REDIS_SERVICE_NAME="redis-server"
+echo "🚀 Setting up the project..."
 
-# Start PostgreSQL service (this assumes the service name is 'postgresql')
-echo "Starting PostgreSQL service..."
-sudo systemctl start $PG_SERVICE_NAME
+# Create virtual environment if not exists
+if [ ! -d "venv" ]; then
+    echo "📦 Creating virtual environment..."
+    python -m venv venv
+fi
 
-# Start Redis service (this assumes the service name is 'redis-server')
-echo "Starting Redis service..."
-sudo systemctl start $REDIS_SERVICE_NAME
+# Activate virtual environment
+echo "🔧 Activating virtual environment..."
+source venv/Scripts/activate
 
-# Set environment variables if necessary (you can also use a .env file for better security)
-export PG_DB_URL="postgres://username:password@localhost:5432/movie_db"
-export REDIS_HOST="localhost"
-export REDIS_PORT="6379"
+# Install dependencies
+#echo "📦 Installing dependencies..."
+#pip install -r backend/requirements.txt
 
-# Run the Flask app (make sure you're in the correct directory)
-echo "Starting Flask application..."
-cd backend
-python app.py  # You can replace this with `flask run` if you have Flask CLI set up
+# Run database migration
+#echo "🛠️ Creating PostgreSQL tables..."
+#python backend/models.py
+
+# Populate database and Redis cache
+#echo "📥 Populating PostgreSQL and Redis..."
+#python backend/populate_db.py
+
+# Start Flask API
+echo "🚀 Starting Flask application..."
+python backend/app.py
