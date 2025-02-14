@@ -15,17 +15,21 @@ fi
 echo "🔧 Activating virtual environment..."
 source venv/Scripts/activate
 
-# Install dependencies
-#echo "📦 Installing dependencies..."
-#pip install -r backend/requirements.txt
+# Check if required dependencies are installed
+if ! pip freeze | grep -q -F -f backend/requirements.txt; then
+    echo "📦 Installing dependencies..."
+    pip install -r backend/requirements.txt
+else
+    echo "✅ All dependencies are already installed."
+fi
 
 # Run database migration
 #echo "🛠️ Creating PostgreSQL tables..."
-#python backend/models.py
+python backend/models.py
 
 # Populate database and Redis cache
 #echo "📥 Populating PostgreSQL and Redis..."
-#python backend/populate_db.py
+python backend/populate_db.py
 
 # Start Flask API
 echo "🚀 Starting Flask application..."

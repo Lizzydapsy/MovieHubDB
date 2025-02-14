@@ -1,66 +1,48 @@
-Folder Structure
-
-graph TB;
-    A[movie-data-project] --> B[backend]
-    A --> C[frontend]
-    A --> D[data]
-    A --> E[.gitignore]
-    A --> F[README.md]
-    A --> G[run.sh]
-
-    B --> B1[app.py]
-    B --> B2[database.py]
-    B --> B3[config.py]
-    B --> B4[requirements.txt]
-
-    C --> C1[index.html]
-
-    D --> D1[movie.csv]
-
-
-Design
-
 classDiagram
-    class Client {
-        +HTTP requests
-        +UI/UX interactions
+    class Frontend {
+        +collect_user_input() : dict
+        +send_request_to_client_api(data: dict) : void
+        +display_data(data: dict) : void
+        +render_visualizations(data: dict) : void
     }
 
-    class Frontend {
-        +HTML
-        +CSS
-        +JavaScript (fetch API)
-        +Displays data
+    class ClientAPI {
+        +send_request(endpoint: str, data: dict) : dict
+        +handle_response(response: dict) : void
     }
 
     class Backend {
-        +Flask app
-        +API routes
-        +Handles business logic
-    }
-
-    class Redis {
-        +Cache data
-        +set() and get()
+        +process_request(request: dict) : dict
+        +fetch_from_postgres(query: str) : dict
+        +fetch_from_redis(key: str) : dict
+        +store_in_redis(key: str, value: dict) : void
+        +switch_cache_or_db(key: str, query: str) : dict
     }
 
     class PostgreSQL {
-        +Store data
-        +SQL queries
+        +query_data(query: str) : dict
     }
 
-    class API {
-        +GET /data
-        +Fetches data from either Redis or PostgreSQL
-        +Stores fetched data in Redis
-        +Switches between Redis/PostgreSQL based on config
+    class Redis {
+        +get_cache(key: str) : dict
+        +set_cache(key: str, value: dict) : void
+        +delete_cache(key: str) : void
     }
 
-    Client --> Frontend : Interacts with UI
-    Frontend --> Backend : Sends HTTP requests (AJAX/fetch)
-    Backend --> API : Calls API route for data
-    API --> Redis : Fetches data from Redis cache (if enabled)
-    API --> PostgreSQL : Fetches data from PostgreSQL (if enabled)
-    Redis --> PostgreSQL : Cache miss leads to DB query (if Redis is used first)
-    API --> Frontend : Returns data
-    Frontend --> Client : Renders data on UI
+    Frontend --> ClientAPI : Sends User Request
+    ClientAPI --> Backend : Sends Request
+    Backend --> PostgreSQL : Queries/Postgres
+    Backend --> Redis : Caches/Retrieves Data
+    Backend --> ClientAPI : Sends Response
+    ClientAPI --> Frontend : Delivers Response
+
+    Backend "1" --> "1" ClientAPI : Handles Request
+    Backend "1" --> "1" PostgreSQL : Interacts
+    Backend "1" --> "1" Redis : Interacts
+    Frontend "1" --> "1" Visualization : Displays Data
+
+    style Frontend fill:#cff,stroke:#333,stroke-width:2px
+    style ClientAPI fill:#fcf,stroke:#333,stroke-width:2px
+    style Backend fill:#cfc,stroke:#333,stroke-width:2px
+    style PostgreSQL fill:#fcc,stroke:#333,stroke-width:2px
+    style Redis fill:#fdf,stroke:#333,stroke-width:2px
