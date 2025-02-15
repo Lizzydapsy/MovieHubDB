@@ -1,0 +1,41 @@
+classDiagram
+    class Frontend {
+        +collect_user_input() : dict
+        +send_request_to_client_api(data: dict) : void
+        +display_data(data: dict) : void
+        +render_visualizations(data: dict) : void
+    }
+    class ClientAPI {
+        +send_request(endpoint: str, data: dict) : dict
+        +handle_response(response: dict) : void
+    }
+    class Backend {
+        +process_request(request: dict) : dict
+        +fetch_from_postgres(query: str) : dict
+        +fetch_from_redis(key: str) : dict
+        +store_in_redis(key: str, value: dict) : void
+        +switch_cache_or_db(key: str, query: str) : dict
+    }
+    class PostgreSQL {
+        +query_data(query: str) : dict
+    }
+    class Redis {
+        +get_cache(key: str) : dict
+        +set_cache(key: str, value: dict) : void
+        +delete_cache(key: str) : void
+    }
+    Frontend --> ClientAPI : Sends User Request
+    ClientAPI --> Backend : Sends Request
+    Backend --> PostgreSQL : Queries/Postgres
+    Backend --> Redis : Caches/Retrieves Data
+    Backend --> ClientAPI : Sends Response
+    ClientAPI --> Frontend : Delivers Response
+    Backend "1" --> "1" ClientAPI : Handles Request
+    Backend "1" --> "1" PostgreSQL : Interacts
+    Backend "1" --> "1" Redis : Interacts
+    Frontend "1" --> "1" Visualization : Displays Data
+    style Frontend fill:#cff,stroke:#333,stroke-width:2px
+    style ClientAPI fill:#fcf,stroke:#333,stroke-width:2px
+    style Backend fill:#cfc,stroke:#333,stroke-width:2px
+    style PostgreSQL fill:#fcc,stroke:#333,stroke-width:2px
+    style Redis fill:#fdf,stroke:#333,stroke-width:2px

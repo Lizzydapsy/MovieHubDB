@@ -4,3 +4,5 @@ data/
 *.ini
 tests/
 frontend/.ipynb_checkpoints
+class_diagram
+image.png
