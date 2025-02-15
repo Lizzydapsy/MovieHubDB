@@ -14,11 +14,8 @@ moviehubdb/
 ├── backend/
 │   ├── app.py                # Main application file
 │   ├── config.ini            # Configuration file (INI format)
-│   ├── config.py             # Configuration settings (Python)
-│   ├── database.py           # Database connection and operations
-│   ├── models.py             # Database models or other backend models
+│   ├── connect_database.py   # Database connection and operations
 │   ├── populate_db.py        # Data population script
-│   ├── redis_cache.py        # Redis caching utility
 │   └── requirements.txt      # List of dependencies for backend
 │
 ├── data/
@@ -27,12 +24,9 @@ moviehubdb/
 ├── frontend/
 │   └── visualization.ipynb   # Jupyter notebook for data visualization
 │
-├── tests/
-│   ├── test_api.py           # API tests
-│   └── test_database.py      # Database tests
-│
-├── .gitignore                # Git ignore rules
 ├── README.md                 # Project description and documentation
+├── .gitignore                # Git ignore rules
+├── run.sh                    # This shell script runs the workflow.
 
 ```
 
