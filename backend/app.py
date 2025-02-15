@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
-from database import get_db_connection  # Assuming the connection function for PostgreSQL
-from redis_cache import redis_client  # Assuming the Redis client is configured here
+from connect_database import get_db_connection  # Assuming the connection function for PostgreSQL
+from connect_database import redis_client  # Assuming the Redis client is configured here
 
 app = Flask(__name__)
 

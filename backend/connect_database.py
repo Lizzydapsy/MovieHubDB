@@ -1,11 +1,9 @@
+import psycopg2
+import redis
 import configparser
 
 config = configparser.ConfigParser()
 config.read('backend/config.ini')
-
-# Debugging: print the loaded sections and key-values
-print(config.sections())  # Should show ['postgresql', 'redis']
-print(config['postgresql'])  # Should print out user, password, etc.
 
 # PostgreSQL configuration
 DB_CONFIG = {
@@ -20,3 +18,20 @@ REDIS_CONFIG = {
     'host': config['redis']['host'],
     'port': config['redis']['port']
 }
+
+# Connecting to PostgreSQL
+
+def get_db_connection():
+    """Connect to PostgreSQL."""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        return conn
+    except Exception as e:
+        print("Database connection error:", e)
+        return None
+    
+
+# Connecting to redis
+
+redis_client = redis.StrictRedis(**REDIS_CONFIG, decode_responses=True)
+

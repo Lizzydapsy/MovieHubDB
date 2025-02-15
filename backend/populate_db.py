@@ -1,11 +1,28 @@
 import csv
-from database import get_db_connection
-from redis_cache import redis_client
+from connect_database import get_db_connection
+from connect_database import redis_client
 from decimal import Decimal
+
 
 def populate_postgres():
     conn = get_db_connection()
     cur = conn.cursor()
+
+    # Create table
+
+    cur.execute("""
+        DROP TABLE IF EXISTS movies;  -- Drops the table if it exists
+        CREATE TABLE IF NOT EXISTS movies (
+            movie_id SERIAL PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            genre VARCHAR(100),
+            release_year INT,
+            rating FLOAT,
+            box_office_million_USD FLOAT
+        );
+    """)
+
+    # Populate the table
 
     with open('data/movies.csv', 'r') as file:
         reader = csv.reader(file)
@@ -45,5 +62,6 @@ def populate_redis():
     conn.close()
 
 if __name__ == "__main__":
+    
     populate_postgres()
     populate_redis()

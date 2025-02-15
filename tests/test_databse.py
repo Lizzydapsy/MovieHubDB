@@ -1,5 +1,5 @@
 import unittest
-from database import get_db_connection
+from connect_database import get_db_connection
 
 class TestDatabase(unittest.TestCase):
     def test_connection(self):

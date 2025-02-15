@@ -1,12 +1,6 @@
-# Python bytecode files
-*.pyc
-*.pyo
 __pycache__/
-
-# Log files
-*.log
-
-# others
 venv/
 data/
 *.ini
+tests/
+frontend/.ipynb_checkpoints
