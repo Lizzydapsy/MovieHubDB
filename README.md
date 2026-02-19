@@ -1,6 +1,6 @@
-# Movie Database Management and Visualization System 
+# Movie Database Management and Visualisation System 
 
-The purpose of our project was to create a data-driven visualization dashboard using PostgreSQL and Redis for efficient data storage and caching. By integrating these two technologies with Flask as the backend framework, we aimed to build an application that could fetch and display movie data from PostgreSQL or Redis, improving performance. The project also allowed us to enhance our frontend development skills, where we displayed the movie data in an interactive table and visualised genre distribution. Through this project, we learned how to effectively use both relational databases (PostgreSQL) and non-relational databse (Redis), improving our understanding of backend development and database management.
+The purpose of our project was to create a data-driven visualisation dashboard using PostgreSQL and Redis for efficient data storage and caching. By integrating these two technologies with Flask as the backend framework, we aimed to build an application that could fetch and display movie data from PostgreSQL or Redis, improving performance. The project also allowed us to enhance our frontend development skills, where we displayed the movie data in an interactive table and visualised genre distribution. Through this project, we learned how to effectively use both relational databases (PostgreSQL) and non-relational databse (Redis), improving our understanding of backend development and database management.
 
 ### Phase 1: Project Planning and Setup
 
@@ -22,7 +22,7 @@ moviehubdb/
 │   └── movies.csv            # CSV file containing movie data
 │
 ├── frontend/
-│   └── visualization.ipynb   # Jupyter notebook for data visualization
+│   └── visualisation.ipynb   # Jupyter notebook for data visualisation
 │
 ├── README.md                 # Project description and documentation
 ├── .gitignore                # Git ignore rules
@@ -32,7 +32,7 @@ moviehubdb/
 
 **System Design**
 
-![This diagram depicts a three-tier web application architecture. The Frontend interacts with the user, sending requests to the ClientAPI. The ClientAPI then communicates with the Backend, which handles data processing and retrieval from PostgreSQL (persistent database) and Redis (cache).  The Backend also manages the Redis cache. Finally, the Frontend displays the retrieved data, including visualizations.  Each component's methods are shown, illustrating the flow of data and control through the system.](image-1.png)
+![This diagram depicts a three-tier web application architecture. The Frontend interacts with the user, sending requests to the ClientAPI. The ClientAPI then communicates with the Backend, which handles data processing and retrieval from PostgreSQL (persistent database) and Redis (cache).  The Backend also manages the Redis cache. Finally, the Frontend displays the retrieved data, including visualisations.  Each component's methods are shown, illustrating the flow of data and control through the system.](image-1.png)
 
 Once the design was in place, we turned to setting up the project environment and the necessary Python libraries. I helped set up the project folders, ensuring everything was ready for the next phase of development.
 
@@ -46,7 +46,7 @@ We then focused on populating the databases. I wrote a script to load movie data
 
 ### Phase 4: Frontend Development
 
-Within our Jupyter Notebook frontend development, I focused on the user interface and presentation, structuring notebook cells for a clear layout of the movie data table and interactive elements.  This included `ipywidgets` for filters, Pandas styling for the table, Markdown for explanations.  Naz handled the dynamic interaction with the backend API, writing Python code (using `requests`) to send requests, process JSON responses, and update the displayed data, including handling API endpoints, pagination, error handling.  We collaborated on the data visualization feature; I explored plotting libraries, while Naz implemented the chosen visualization using appropriate library and connected it to backend data".  Finally, we thoroughly tested the frontend within the notebook to ensure seamless backend communication.
+Within our Jupyter Notebook frontend development, I focused on the user interface and presentation, structuring notebook cells for a clear layout of the movie data table and interactive elements.  This included `ipywidgets` for filters, Pandas styling for the table, Markdown for explanations.  Naz handled the dynamic interaction with the backend API, writing Python code (using `requests`) to send requests, process JSON responses, and update the displayed data, including handling API endpoints, pagination, error handling.  We collaborated on the data visualisation feature; I explored plotting libraries, while Naz implemented the chosen visualisation using appropriate library and connected it to backend data".  Finally, we thoroughly tested the frontend within the notebook to ensure seamless backend communication.
 
 
 ### Phase 5: Testing, Scaling, and Optimisation
