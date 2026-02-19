@@ -1,18 +1,22 @@
 import csv
-from connect_database import get_db_connection
-from connect_database import redis_client
+import random
+from connect_database import get_db_connection, redis_client
 from decimal import Decimal
 
-
+# =====================================================
+# Populate PostgreSQL (Full Dataset)
+# =====================================================
 def populate_postgres():
+    """Create the movies table and populate PostgreSQL from CSV."""
     conn = get_db_connection()
+    if not conn:
+        print("Failed to connect to PostgreSQL.")
+        return
+
     cur = conn.cursor()
-
-    # Create table
-
     cur.execute("""
-        DROP TABLE IF EXISTS movies;  -- Drops the table if it exists
-        CREATE TABLE IF NOT EXISTS movies (
+        DROP TABLE IF EXISTS movies;
+        CREATE TABLE movies (
             movie_id SERIAL PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             genre VARCHAR(100),
@@ -22,11 +26,9 @@ def populate_postgres():
         );
     """)
 
-    # Populate the table
-
-    with open('data/movies.csv', 'r') as file:
+    with open('data/movies.csv', 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
-        next(reader)  # Skip header
+        next(reader)  # skip header
         for row in reader:
             cur.execute("""
                 INSERT INTO movies (movie_id, title, genre, release_year, rating, box_office_million_USD)
@@ -37,31 +39,103 @@ def populate_postgres():
     conn.commit()
     cur.close()
     conn.close()
+    print("PostgreSQL database populated successfully.")
 
-def populate_redis():
+# =====================================================
+# Flush Redis hot movies
+# =====================================================
+def clear_redis_hot_movies():
+    keys = redis_client.keys("movie:*")
+    if keys:
+        redis_client.delete(*keys)
+        print(f"Cleared {len(keys)} old Redis entries.")
+    else:
+        print("Redis was already empty.")
+
+# =====================================================
+# Populate Redis with SUBSET (Hot Data)
+# =====================================================
+def populate_redis_subset(strategy="top_box_office", limit=10):
+    """
+    Populate Redis with a subset of PostgreSQL data.
+    strategy options:
+    - "top_box_office"
+    - "random"
+    """
     conn = get_db_connection()
+    if not conn:
+        print("Failed to connect to PostgreSQL.")
+        return
+
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM movies")
-    movies = cur.fetchall()
+    if strategy == "top_box_office":
+        cur.execute("""
+            SELECT * FROM movies
+            ORDER BY box_office_million_USD DESC
+            LIMIT %s;
+        """, (limit,))
+        movies = cur.fetchall()
 
+    elif strategy == "random":
+        cur.execute("SELECT * FROM movies;")
+        all_movies = cur.fetchall()
+        movies = random.sample(all_movies, min(limit, len(all_movies)))
+
+    cur.close()
+    conn.close()
+
+    store_movies_in_redis(movies)
+    print(f"Redis populated with {len(movies)} hot movies.")
+
+    # Debug: print total Redis entries after population
+    total_keys = redis_client.keys("movie:*")
+    print(f"Total Redis entries now: {len(total_keys)}")
+
+# =====================================================
+# Helper: Store Movies in Redis
+# =====================================================
+def store_movies_in_redis(movies):
     for movie in movies:
-        # Convert Decimal values to float before inserting into Redis
         redis_client.hset(f"movie:{movie[0]}", mapping={
             "title": movie[1],
             "genre": movie[2],
             "release_year": movie[3],
-            "rating": float(movie[4]) if isinstance(movie[4], Decimal) else movie[4],  # Convert Decimal to float
-            "box_office_million_USD": float(movie[5]) if isinstance(movie[5], Decimal) else movie[5]  # Convert Decimal to float
+            "rating": float(movie[4]) if isinstance(movie[4], Decimal) else movie[4],
+            "box_office_million_USD": float(movie[5]) if isinstance(movie[5], Decimal) else movie[5]
         })
 
+# =====================================================
+# Sync Single Movie to Redis (When Updated)
+# =====================================================
+def sync_movie_to_redis(movie_id):
+    """Refresh a single movie inside Redis when updated in PostgreSQL."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM movies WHERE movie_id = %s;", (movie_id,))
+    movie = cur.fetchone()
     cur.close()
     conn.close()
 
-    cur.close()
-    conn.close()
+    if movie:
+        redis_client.hset(f"movie:{movie[0]}", mapping={
+            "title": movie[1],
+            "genre": movie[2],
+            "release_year": movie[3],
+            "rating": float(movie[4]),
+            "box_office_million_USD": float(movie[5])
+        })
+        print(f"Movie {movie_id} synced to Redis.")
 
+# =====================================================
+# Main Execution
+# =====================================================
 if __name__ == "__main__":
-    
+    # Populate PostgreSQL
     populate_postgres()
-    populate_redis()
+
+    # Clear old Redis entries
+    clear_redis_hot_movies()
+
+    # Populate Redis with top 10 movies
+    populate_redis_subset(strategy="top_box_office", limit=10)

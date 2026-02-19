@@ -1,76 +1,101 @@
 from flask import Flask, request, jsonify
-from connect_database import get_db_connection  # Assuming the connection function for PostgreSQL
-from connect_database import redis_client  # Assuming the Redis client is configured here
+from connect_database import get_db_connection, redis_client
+import time
 
 app = Flask(__name__)
 
-def get_all_movies(db_choice):
-    """Try Redis first, then PostgreSQL based on db_choice to fetch all movies"""
-    movies = None
+# =====================================================
+# Helper: Convert PostgreSQL row to dictionary
+# =====================================================
+def row_to_dict(row):
+    return {
+        "movie_id": row[0],
+        "title": row[1],
+        "genre": row[2],
+        "release_year": row[3],
+        "rating": float(row[4]),
+        "box_office_million_USD": float(row[5])
+    }
 
-    # Validate db_choice
-    if db_choice not in ['redis', 'postgres']:
-        return {"error": "Invalid database choice. Please choose 'redis' or 'postgres'."}
-    
+# =====================================================
+# Retrieve movies based on selected database
+# =====================================================
+def get_all_movies(db_choice):
+    if db_choice not in ["redis", "postgres"]:
+        return {"error": "Invalid database selection. Choose 'redis' or 'postgres'."}
+
+    start_time = time.time()
+
     try:
+        # -------------------------------
+        # Redis (Hot Subset / Cache Layer)
+        # -------------------------------
         if db_choice == "redis":
-            # Fetch all movies from Redis (cache layer)
-            # Assuming all movie entries are stored as a hash with keys "movie:{id}" in Redis
-            movie_keys = redis_client.keys("movie:*")  # Get all keys starting with 'movie:'
+            movie_keys = redis_client.keys("movie:*")
             movies = []
+
             for key in movie_keys:
                 movie_data = redis_client.hgetall(key)
                 if movie_data:
-                    movies.append(movie_data)
-            
-            # If no movies found in Redis, fetch from PostgreSQL
-            if not movies:
-                print("Movies not found in Redis, querying PostgreSQL...")
-        
-        if not movies and db_choice == "postgres":
-            # Fetch all movies from PostgreSQL
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM movies")
-            rows = cur.fetchall()
-            
-            movies = []
-            for row in rows:
-                movie = {
-                    "movie_id": row[0],
-                    "title": row[1],
-                    "genre": row[2],
-                    "release_year": row[3],
-                    "rating": row[4],
-                    "box_office_million_USD": row[5]
-                }
-                # Optionally store the fetched data in Redis for future use
-                redis_client.hset(f"movie:{row[0]}", mapping=movie)
-                movies.append(movie)
+                    movies.append({
+                        "movie_id": int(key.split(":")[1]),
+                        "title": movie_data["title"],
+                        "genre": movie_data["genre"],
+                        "release_year": int(movie_data["release_year"]),
+                        "rating": float(movie_data["rating"]),
+                        "box_office_million_USD": float(movie_data["box_office_million_USD"])
+                    })
 
+            execution_time = round((time.time() - start_time) * 1000, 2)
+            return {
+                "source": "Redis (Cache Layer - Hot Data Subset)",
+                "execution_time_ms": execution_time,
+                "count": len(movies),
+                "data": movies
+            }
+
+        # -------------------------------
+        # PostgreSQL (Full Dataset)
+        # -------------------------------
+        if db_choice == "postgres":
+            conn = get_db_connection()
+            if not conn:
+                return {"error": "Could not connect to PostgreSQL."}
+
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM movies;")
+            rows = cur.fetchall()
             cur.close()
             conn.close()
-    
+
+            movies = [row_to_dict(row) for row in rows]
+            execution_time = round((time.time() - start_time) * 1000, 2)
+
+            return {
+                "source": "PostgreSQL (Primary Database - Full Dataset)",
+                "execution_time_ms": execution_time,
+                "count": len(movies),
+                "data": movies
+            }
+
     except Exception as e:
         return {"error": f"An error occurred: {str(e)}"}
 
-    return movies
-
+# =====================================================
+# API endpoint
+# =====================================================
 @app.route("/movies", methods=["GET"])
 def get_all_movies_endpoint():
-    # Get the database choice from the query parameter (default to 'redis' if not provided)
-    db_choice = request.args.get('db', 'redis')  # Default to 'redis' if no db is specified
-    
-    movies = get_all_movies(db_choice)
-    
-    if isinstance(movies, dict) and "error" in movies:
-        # If there's an error message in the movie data (invalid db or exception occurred)
-        return jsonify(movies), 400
-    
-    if movies:
-        return jsonify(movies)
-    else:
-        return jsonify({"error": "No movies found"}), 404
+    db_choice = request.args.get("db", "postgres")
+    result = get_all_movies(db_choice)
 
+    if "error" in result:
+        return jsonify(result), 400
+
+    return jsonify(result)
+
+# =====================================================
+# Run Flask
+# =====================================================
 if __name__ == "__main__":
     app.run(debug=True)

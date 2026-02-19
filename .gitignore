@@ -1,8 +1,22 @@
+# Python cache
 __pycache__/
+*.pyc
+
+# Virtual environment
 venv/
+
+# Local data
 data/
-*.ini
-tests/
+
+# Configuration files with credentials
+backend/config.ini
+
+# Jupyter Notebook checkpoints
 frontend/.ipynb_checkpoints
+
+# Images or diagrams not required in repo
 class_diagram
 image.png
+
+# Testing directories
+tests/
