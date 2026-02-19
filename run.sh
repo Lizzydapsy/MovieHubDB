@@ -1,46 +1,72 @@
 #!/bin/bash
 
-# Stop script on error
+# Stop script immediately if any command fails
 set -e
 
-echo "Setting up the project..."
+echo "=== Setting up the project ==="
 
-# Create virtual environment if it does not exist
+# ------------------------------
+# Virtual Environment Setup
+# ------------------------------
 if [ ! -d "venv" ]; then
     echo "Creating virtual environment..."
-    python -m venv venv
+    python -m venv venv  # Create virtual environment in 'venv'
 fi
 
-# Activate virtual environment (Linux/macOS)
+# Activate virtual environment (Linux/macOS or Windows)
 if [ -f "venv/bin/activate" ]; then
     source venv/bin/activate
-# Activate virtual environment (Windows)
 elif [ -f "venv/Scripts/activate" ]; then
     source venv/Scripts/activate
 else
-    echo "Virtual environment not found. Exiting."
+    echo "ERROR: Virtual environment not found. Exiting."
     exit 1
 fi
 
-# Install required dependencies
-echo "Installing dependencies..."
-pip install -r backend/requirements.txt
+# ------------------------------
+# Install Dependencies
+# ------------------------------
+echo "Installing Python dependencies..."
+# pip install --upgrade pip 
+C:/Anaconda3/python.exe -m pip install --upgrade pip  # Upgrade pip first
+
+pip install -r backend/requirements.txt || { echo "Failed to install dependencies."; exit 1; }
 
 # ------------------------------
-# SSH Tunnels
+# SSH Tunnel Setup
 # ------------------------------
-echo "Starting SSH tunnels for PostgreSQL and Redis..."
+REMOTE_USER="dsdauser"
+REMOTE_HOST="ml-lab-7bebf525-b3be-4a32-98d5-e22665cb2333.westeurope.cloudapp.azure.com"
+SSH_PORT=52817
 
-# PostgreSQL tunnel (background)
-ssh -f -N -L 5432:localhost:5432 -p 52817 dsdauser@ml-lab-7bebf525-b3be-4a32-98d5-e22665cb2333.westeurope.cloudapp.azure.com
-# Redis tunnel (background)
-ssh -f -N -L 6379:localhost:6379 -p 52817 dsdauser@ml-lab-7bebf525-b3be-4a32-98d5-e22665cb2333.westeurope.cloudapp.azure.com
+echo "Checking SSH connectivity to $REMOTE_HOST..."
+if ! ssh -p $SSH_PORT -q $REMOTE_USER@$REMOTE_HOST exit; then
+    echo "ERROR: Cannot connect to remote server. Check SSH credentials or network."
+    exit 1
+fi
+
+echo "Starting SSH tunnels in the background..."
+
+# PostgreSQL tunnel
+ssh -f -N -L 5432:localhost:5432 -p $SSH_PORT $REMOTE_USER@$REMOTE_HOST || { echo "Failed to start PostgreSQL tunnel."; exit 1; }
+
+# Redis tunnel
+ssh -f -N -L 6379:localhost:6379 -p $SSH_PORT $REMOTE_USER@$REMOTE_HOST || { echo "Failed to start Redis tunnel."; exit 1; }
+
 # ------------------------------
-# Populate PostgreSQL and Redis
+# Populate Databases
 # ------------------------------
 echo "Populating PostgreSQL and Redis..."
-python backend/populate_db.py
+if ! python backend/populate_db.py; then
+    echo "ERROR: Failed to populate databases. Check populate_db.py."
+    exit 1
+fi
 
+# ------------------------------
 # Start Flask API
+# ------------------------------
 echo "Starting Flask application..."
-python backend/app.py
+if ! python backend/app.py; then
+    echo "ERROR: Flask application failed to start."
+    exit 1
+fi

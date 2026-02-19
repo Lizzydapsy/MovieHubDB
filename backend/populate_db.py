@@ -106,28 +106,6 @@ def store_movies_in_redis(movies):
         })
 
 # =====================================================
-# Sync Single Movie to Redis (When Updated)
-# =====================================================
-def sync_movie_to_redis(movie_id):
-    """Refresh a single movie inside Redis when updated in PostgreSQL."""
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM movies WHERE movie_id = %s;", (movie_id,))
-    movie = cur.fetchone()
-    cur.close()
-    conn.close()
-
-    if movie:
-        redis_client.hset(f"movie:{movie[0]}", mapping={
-            "title": movie[1],
-            "genre": movie[2],
-            "release_year": movie[3],
-            "rating": float(movie[4]),
-            "box_office_million_USD": float(movie[5])
-        })
-        print(f"Movie {movie_id} synced to Redis.")
-
-# =====================================================
 # Main Execution
 # =====================================================
 if __name__ == "__main__":

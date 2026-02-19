@@ -1,4 +1,11 @@
+# Flask web framework
 Flask==2.1.1
+
+# PostgreSQL adapter for Python
 psycopg2-binary
+
+# Redis client library
 redis==4.4.0
+
+# WSGI utility library used internally by Flask
 werkzeug==2.1.1
