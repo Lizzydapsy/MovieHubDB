@@ -27,8 +27,8 @@ fi
 # Install Dependencies
 # ------------------------------
 echo "Installing Python dependencies..."
-# pip install --upgrade pip 
-C:/Anaconda3/python.exe -m pip install --upgrade pip  # Upgrade pip first
+#pip install --upgrade pip 
+#C:/Anaconda3/python.exe -m pip install --upgrade pip  # Upgrade pip first
 
 pip install -r backend/requirements.txt || { echo "Failed to install dependencies."; exit 1; }
 
@@ -36,8 +36,8 @@ pip install -r backend/requirements.txt || { echo "Failed to install dependencie
 # SSH Tunnel Setup
 # ------------------------------
 REMOTE_USER="dsdauser"
-REMOTE_HOST="ml-lab-7bebf525-b3be-4a32-98d5-e22665cb2333.westeurope.cloudapp.azure.com"
-SSH_PORT=52817
+REMOTE_HOST="ml-lab-a1661695-3f22-4db4-89d6-01d3f0940288.westeurope.cloudapp.azure.com"
+SSH_PORT=50798
 
 echo "Checking SSH connectivity to $REMOTE_HOST..."
 if ! ssh -p $SSH_PORT -q $REMOTE_USER@$REMOTE_HOST exit; then
