@@ -30,7 +30,7 @@ echo "Installing Python dependencies..."
 #pip install --upgrade pip 
 #C:/Anaconda3/python.exe -m pip install --upgrade pip  # Upgrade pip first
 
-pip install -r backend/requirements.txt || { echo "Failed to install dependencies."; exit 1; }
+python -m pip install -r backend/requirements.txt || { echo "Failed to install dependencies."; exit 1; }
 
 # ------------------------------
 # SSH Tunnel Setup
